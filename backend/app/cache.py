@@ -124,10 +124,29 @@ class CacheResult:
 class CachedFetcher:
     """Read-through cache with single-flight and stale-on-error semantics."""
 
-    def __init__(self, backend: CacheBackend, clock: Callable[[], float] = time.time) -> None:
+    def __init__(self, backend: CacheBackend, clock: Callable[[], float] = time.time, negative_ttl: float = 60.0) -> None:
         self.backend = backend
         self._clock = clock
         self._locks: dict[str, asyncio.Lock] = {}
+        # Permanent upstream errors (unknown symbol, rejected key, plan restriction) are
+        # remembered briefly so repeated requests don't burn provider credits.
+        self.negative_ttl = negative_ttl
+        self._negative: dict[str, tuple[float, AppError]] = {}
+
+    def _remember_error(self, key: str, exc: AppError) -> None:
+        if len(self._negative) > 5000:
+            now = self._clock()
+            self._negative = {k: v for k, v in self._negative.items() if v[0] > now}
+        self._negative[key] = (self._clock() + self.negative_ttl, exc)
+
+    def _recent_error(self, key: str) -> AppError | None:
+        entry = self._negative.get(key)
+        if entry is None:
+            return None
+        if entry[0] <= self._clock():
+            self._negative.pop(key, None)
+            return None
+        return entry[1]
 
     def _lock(self, key: str) -> asyncio.Lock:
         lock = self._locks.get(key)
@@ -162,6 +181,9 @@ class CachedFetcher:
             return CacheResult(cached[1], hit=True, stale=False, age_seconds=now - cached[0])
 
         async with self._lock(key):
+            recent = self._recent_error(key)
+            if recent is not None:
+                raise recent
             # Another request may have refreshed the entry while we waited.
             cached = await self._read(key)
             now = self._clock()
@@ -183,6 +205,8 @@ class CachedFetcher:
                         age_seconds=age,
                         warning=f"{exc.message} Showing cached data from {int(age)}s ago.",
                     )
+                if not exc.retryable and self.negative_ttl > 0:
+                    self._remember_error(key, exc)
                 raise
             await self.backend.set(key, json.dumps({"t": self._clock(), "v": value}), stale_ttl)
             return CacheResult(value, hit=False, stale=False, age_seconds=0.0)

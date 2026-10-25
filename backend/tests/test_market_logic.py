@@ -188,6 +188,26 @@ async def test_cached_fetcher_propagates_non_retryable_and_cold_errors():
         await fetcher.get_or_fetch("k", missing, ttl=5, stale_ttl=100)
 
 
+async def test_permanent_errors_are_negatively_cached():
+    clock = FakeClock()
+    fetcher = CachedFetcher(MemoryCache(clock=clock), clock=clock, negative_ttl=60)
+    calls = 0
+
+    async def missing():
+        nonlocal calls
+        calls += 1
+        raise SymbolNotFoundError("nope")
+
+    for _ in range(3):
+        with pytest.raises(SymbolNotFoundError):
+            await fetcher.get_or_fetch("k", missing, ttl=5, stale_ttl=100)
+    assert calls == 1
+    clock.t += 61
+    with pytest.raises(SymbolNotFoundError):
+        await fetcher.get_or_fetch("k", missing, ttl=5, stale_ttl=100)
+    assert calls == 2
+
+
 async def test_redis_cache_backend():
     cache = RedisCache(client=fakeredis.FakeAsyncRedis(decode_responses=True))
     await cache.set("x", "value", ttl=60)

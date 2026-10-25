@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens. Light values on :root, dark values on .dark (the default). */
+:root {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --surface-2: #f0f3fa;
+  --surface-3: #e6eaf2;
+  --border: #dfe3ec;
+  --text: #131722;
+  --muted: #5d6475;
+  --accent: #2962ff;
+  --accent-soft: rgba(41, 98, 255, 0.12);
+  --up: #089981;
+  --down: #e5303f;
+  --up-soft: rgba(8, 153, 129, 0.12);
+  --down-soft: rgba(229, 48, 63, 0.12);
+  --warn: #c77700;
+  --warn-soft: rgba(199, 119, 0, 0.14);
+  --grid: #eef1f6;
+}
+
+.dark {
+  --bg: #0b0e14;
+  --surface: #131722;
+  --surface-2: #1a1f2c;
+  --surface-3: #222838;
+  --border: #2a2f3d;
+  --text: #d6d9e0;
+  --muted: #8b93a7;
+  --accent: #3d74ff;
+  --accent-soft: rgba(61, 116, 255, 0.16);
+  --up: #26a69a;
+  --down: #ef5350;
+  --up-soft: rgba(38, 166, 154, 0.14);
+  --down-soft: rgba(239, 83, 80, 0.14);
+  --warn: #f5a524;
+  --warn-soft: rgba(245, 165, 36, 0.14);
+  --grid: #1c2130;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--border);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-up-soft: var(--up-soft);
+  --color-down-soft: var(--down-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin scrollbars inside panels */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
