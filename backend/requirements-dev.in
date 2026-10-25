@@ -1,0 +1,9 @@
+# Test and lint tooling (on top of requirements.txt):
+#   uv pip compile requirements-dev.in -o requirements-dev.txt --python-version 3.12
+-c requirements.txt
+pytest==9.1.1
+pytest-asyncio==1.4.0
+respx==0.23.1
+fakeredis==2.40.0
+ta==0.11.0
+ruff==0.17.2
