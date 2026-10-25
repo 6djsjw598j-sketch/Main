@@ -1,5 +1,5 @@
 import type { QuoteResponse } from "../../api/types";
-import { changeTone, formatCompact, formatPct, formatPrice, formatSigned } from "../../lib/format";
+import { changeTone, formatCompact, formatPct, formatPrice, formatSigned, pricePrecision } from "../../lib/format";
 import { formatDateTime } from "../../lib/time";
 import { ErrorState } from "../common/ErrorState";
 import { IconStar } from "../common/icons";
@@ -64,7 +64,7 @@ export function AssetSummary({
             </span>
             {q.currency && <span className="text-xs text-muted">{q.currency}</span>}
             <span className={cx("tabular text-base font-medium", tone === "up" ? "text-up" : tone === "down" ? "text-down" : "text-muted")}>
-              {formatSigned(q.change)} ({formatPct(q.change_percent)})
+              {formatSigned(q.change, pricePrecision(q.price))} ({formatPct(q.change_percent)})
             </span>
             <span className="text-xs text-muted">{isCrypto ? "24h" : "vs prev. close"}</span>
           </div>
