@@ -77,6 +77,12 @@ async def health(request: Request) -> JSONResponse:
     return JSONResponse(body.model_dump(mode="json"), status_code=200 if db.ok else 503)
 
 
+@router.head("/health", include_in_schema=False)
+async def health_head(request: Request) -> JSONResponse:
+    """Same check for monitors that use HEAD requests."""
+    return await health(request)
+
+
 @router.get("/meta", response_model=MetaResponse, summary="Timeframes, factor model, provider capabilities")
 async def meta(request: Request) -> MetaResponse:
     state = request.app.state

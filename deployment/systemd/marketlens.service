@@ -1,0 +1,20 @@
+# Starts the MarketLens Docker Compose stack at boot (containers also restart on failure
+# via `restart: unless-stopped`). Install: see docs/DEPLOYMENT_AWS_EC2.md step 11.
+[Unit]
+Description=MarketLens (Docker Compose)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=ubuntu
+Group=docker
+WorkingDirectory=/home/ubuntu/marketlens
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

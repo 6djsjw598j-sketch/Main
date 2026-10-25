@@ -31,6 +31,7 @@ async def test_health_and_meta(client):
     assert body["status"] in ("ok", "degraded") and body["database"]["ok"] is True
     assert {p["name"] for p in body["providers"]} == {"coinbase", "twelvedata"}
     assert r.headers["X-Content-Type-Options"] == "nosniff" and r.headers["X-Request-ID"]
+    assert (await client.head("/api/health")).status_code == 200
     meta = (await client.get("/api/meta")).json()
     assert meta["timeframes"] == ["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w", "1M"]
     assert len(meta["factors"]) == 13 and "not financial advice" in meta["disclaimer"]
