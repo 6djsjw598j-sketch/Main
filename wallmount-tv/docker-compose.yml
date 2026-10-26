@@ -1,0 +1,31 @@
+# Alternative to the systemd install: run the site in a container.
+#   cp .env.example .env   # set ADMIN_TOKEN
+#   docker compose up -d --build
+# Publishes only on 127.0.0.1:3000 so the host's Nginx (deploy/nginx.conf) terminates TLS in front of it.
+name: levelmount
+
+services:
+  web:
+    build: .
+    image: levelmount-web:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      DATA_DIR: /data
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - quotes:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  quotes:

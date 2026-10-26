@@ -1,0 +1,26 @@
+name: Wall-mount site
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["wallmount-tv/**", ".github/workflows/wallmount-site.yml"]
+  pull_request:
+    paths: ["wallmount-tv/**", ".github/workflows/wallmount-site.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: wallmount-tv
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm test
+      - run: bash -n deploy/bootstrap-ec2.sh && bash -n deploy/deploy.sh
+      - run: docker build -t levelmount-web:ci .
