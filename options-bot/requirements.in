@@ -1,0 +1,9 @@
+# Top-level runtime dependencies. requirements.txt is the fully pinned lock generated from this file:
+#   uv pip compile requirements.in -o requirements.txt --python-version 3.12
+httpx==0.28.1
+pydantic==2.14.1
+pydantic-settings==2.16.1
+numpy==2.5.4
+pandas==3.1.0
+pyyaml==6.0.3
+tzdata==2026.5

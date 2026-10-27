@@ -215,6 +215,10 @@ docker-compose.yml, .env.example, Makefile, .github/workflows/ci.yml
 docs/                         deployment, API, methodology, providers, security
 ```
 
+The repository also contains [`options-bot/`](options-bot/README.md), a separate project: a
+rules-based, risk-first options trading bot for Alpaca (paper trading by default). It has its own
+README, tests and CI workflow.
+
 ## Configuration reference
 
 All settings are environment variables (see `.env.example` and `backend/.env.example`).

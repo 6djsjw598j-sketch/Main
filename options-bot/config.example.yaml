@@ -1,0 +1,111 @@
+# optionsbot configuration. Copy to config.yaml and adjust. Every key is optional:
+# anything you leave out uses the default shown here. Unknown keys are rejected so a typo
+# can't silently disable a safety rule.
+
+mode: paper              # paper | live (live also needs OPTIONSBOT_LIVE_CONFIRMATION, see .env.example)
+dry_run: false           # true = analyse and log decisions, never send orders
+
+# Liquid optionable ETFs. Single stocks need an earnings source (finnhub key or earnings_file).
+watchlist: [SPY, QQQ, IWM, DIA, GLD, TLT, XLF, XLE]
+market_symbol: SPY       # drives the market regime filter and beta weighting
+allow_unknown_earnings: false
+# earnings_file: earnings.csv   # CSV with "symbol,date" rows
+db_path: data/optionsbot.db
+kill_switch_file: data/STOP     # create this file to stop new entries immediately
+log_level: INFO
+
+strategy:
+  # Which structures the playbook may use
+  enabled: [bull_put_credit_spread, bear_call_credit_spread, iron_condor, bull_call_debit_spread, bear_put_debit_spread]
+  target_dte: 45
+  min_dte: 30
+  max_dte: 60
+  prefer_monthly: true
+  credit_short_delta: 0.25
+  credit_short_delta_min: 0.15
+  credit_short_delta_max: 0.35
+  min_credit_to_width: 0.20       # credit must be at least 20% of the spread width (at the expected fill)
+  min_pop: 0.55
+  condor_short_delta: 0.16
+  condor_short_delta_min: 0.10
+  condor_short_delta_max: 0.22
+  min_condor_credit_to_width: 0.25
+  debit_long_delta_min: 0.55
+  debit_long_delta_max: 0.75
+  debit_short_delta_min: 0.25
+  debit_short_delta_max: 0.40
+  max_debit_to_width: 0.55
+  min_width: 1.0
+  max_width_pct_of_spot: 0.04
+  min_iv_rank_credit: 30          # sell premium only when IV rank >= 30
+  min_iv_rank_condor: 50
+  max_iv_rank_debit: 30           # buy debit spreads only when IV rank <= 30
+  max_adx_condor: 25
+  require_positive_edge: true
+  min_edge_pct_of_risk: 0.02      # model edge after round-trip costs must beat 2% of max loss
+  min_underlying_price: 20
+
+liquidity:
+  min_open_interest: 100
+  max_leg_spread_abs: 0.05
+  max_leg_spread_pct: 0.15
+  max_combo_spread_pct: 0.25
+
+risk:
+  max_risk_per_trade_pct: 0.02    # max loss of one trade <= 2% of equity
+  max_portfolio_risk_pct: 0.25    # sum of max losses <= 25% of equity
+  max_open_trades: 8
+  max_trades_per_underlying: 1
+  max_new_trades_per_day: 3
+  max_contracts_per_trade: 10
+  buying_power_reserve_pct: 0.20
+  max_net_beta_delta_pct: 1.0     # net SPY-equivalent delta exposure <= 100% of equity
+  correlation_groups:
+    us_equity_index: [SPY, QQQ, IWM, DIA]
+  max_trades_per_group: 2
+  daily_loss_limit_pct: 0.03
+  max_drawdown_pct: 0.15          # halts new entries until `optionsbot resume`
+  max_consecutive_losses: 4
+  loss_streak_cooldown_days: 2
+  reentry_cooldown_days_after_loss: 3
+  risk_off_size_multiplier: 0.5
+  crisis_iv: 0.40                 # SPY implied vol at/above this: no new trades
+  crisis_daily_move_pct: 0.04
+
+management:
+  credit_profit_target_pct: 0.50
+  credit_stop_loss_multiple: 2.0
+  debit_profit_target_pct: 0.50
+  debit_stop_loss_pct: 0.50
+  credit_time_exit_dte: 21
+  debit_time_exit_dte: 14
+  close_on_short_strike_breach: false
+  min_extrinsic_itm_short: 0.10
+  close_before_earnings_days: 1
+  pdt_equity_threshold: 25000      # below this, avoid non-urgent same-day round trips (pattern-day-trader rule)
+
+execution:
+  step_timeout_seconds: 45
+  poll_seconds: 3
+  cancel_timeout_seconds: 20
+  entry_steps: 4
+  exit_steps: 5
+  entry_max_concession: 0.4       # never give up more than 40% of the mid-to-natural gap on entry
+  exit_max_concession: 0.6
+  urgent_exit_max_concession: 1.0 # stops may go all the way to the natural price
+  tick: 0.01
+
+schedule:
+  cycle_seconds: 300
+  entry_start_minutes_after_open: 30
+  entry_stop_minutes_before_close: 30
+  exit_start_minutes_after_open: 5
+  exit_stop_minutes_before_close: 3
+
+data:
+  stock_quote_feed: iex           # sip needs a paid Alpaca data plan
+  stock_bars_feed: sip            # free plans may read SIP history older than 15 minutes
+  options_feed: indicative        # opra needs a paid Alpaca data plan (recommended for live)
+  history_days: 420
+  iv_rank_min_history: 60
+  risk_free_rate: 0.04

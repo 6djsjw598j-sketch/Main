@@ -6,6 +6,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 backend/data/
+options-bot/data/
 *.db
 *.sqlite3
 

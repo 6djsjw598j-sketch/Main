@@ -1,0 +1,26 @@
+[project]
+name = "optionsbot"
+version = "1.0.0"
+description = "Rules-based, risk-first options trading bot for Alpaca (paper trading by default)"
+requires-python = ">=3.12"
+
+[project.scripts]
+optionsbot = "optionsbot.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["optionsbot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 150
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003", "B008", "SIM108", "RUF022"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["optionsbot"]
